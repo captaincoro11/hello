@@ -116,16 +116,24 @@
 
       // Handle camera switching
       document.getElementById('switchCamera').addEventListener('click', () => {
-        Instascan.Camera.getCameras()
-          .then((cameras) => {
-            if (cameras.length > 1) {
-              currentCameraIndex = (currentCameraIndex + 1) % cameras.length;
-              scanner.stop();
-              startScanning(cameras[currentCameraIndex]);
-            }
-          })
-          .catch((error) => console.error(error));
-      });
+  Instascan.Camera.getCameras()
+    .then((cameras) => {
+      if (cameras.length > 1) {
+        // If more than one camera is available, switch between them
+        currentCameraIndex = (currentCameraIndex + 1) % cameras.length;
+        scanner.stop().then(() => {
+          startScanning(cameras[currentCameraIndex]); // Restart scanning with the new camera
+        }).catch((error) => console.error('Failed to stop scanner:', error));
+      } else if (cameras.length === 1) {
+        // If only one camera is available, show an alert or just log
+        alert('Only one camera available.');
+      } else {
+        console.error('No cameras found.');
+        alert('No camera found on this device.');
+      }
+    })
+    .catch((error) => console.error('Failed to get cameras:', error));
+});
 
       // Handle QR code scanning
       scanner.addListener('scan', (content) => {
